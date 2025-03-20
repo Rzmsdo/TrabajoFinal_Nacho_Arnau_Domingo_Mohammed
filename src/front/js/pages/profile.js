@@ -3,7 +3,7 @@ import { Context } from "../store/appContext";
 import "../../styles/profile.css";
 import "../../styles/index.css";
 import userDefault from "../../img/user.webp";
-import { Link } from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 
 
 export const Profile = () => {
@@ -12,7 +12,7 @@ export const Profile = () => {
   const [image, setImage] = useState(userDefault);
   const [emailDef, setEmailDef] = useState();
   const [nameDef, setNameDef] = useState()
-  
+  const navigate = useNavigate();
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -25,7 +25,17 @@ export const Profile = () => {
     setImage( localStorage.getItem("picture")),
     setEmailDef(localStorage.getItem("email")),
     setNameDef(localStorage.getItem("username"))
-  },[])
+  },[]);
+
+
+ 
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
 
 
 
@@ -44,13 +54,13 @@ export const Profile = () => {
             <img
             src={image}
             alt="Foto de perfil"
-            className="img-fluid rounded-circle border "
-            style={{ width: "200px", height: "200px", objectFit: "cover" }}
+            className="img-fluid rounded-circle"
+            style={{ width: "200px", height: "200px", objectFit: "cover", marginRight: "20px"}}
             />
         </div>
 
-          <div className="col-md-8">
-            <div className="card p-4 shadow-lg" id="perfil-container">
+          <div className="col-md-8 form">
+            <div className="card p-4" id="perfil-container">
               <h5 className="mb-3">Información acerca del perfil</h5>
               <form>
                 <div className="mb-3">
@@ -66,7 +76,9 @@ export const Profile = () => {
                   <input type="text" className="form-control" />
                 </div>
                 <div className="d-flex justify-content-end">
-                  <button type="submit" className="save"><a className="text-c1" href="/private">Guardar cambios</a></button>
+                  <button type="submit" className="save">
+                    <a className="text-c1" href="/private">Guardar cambios</a>
+                  </button>
                 </div>
               </form>
             </div>

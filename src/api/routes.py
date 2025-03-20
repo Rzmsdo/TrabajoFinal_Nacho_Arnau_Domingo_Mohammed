@@ -50,8 +50,8 @@ cloudinary.config(
 )
 
 
-print("a ver que llega: ", os.environ.get('RESEND_KEY')) 
-resend.api_key = os.getenv("RESEND_KEY")
+
+# resend.api_key = os.getenv("RESEND_KEY")
  
 
 
@@ -83,13 +83,14 @@ google = oauth.register(
     authorize_params={'scope': 'openid email profile'},
     client_kwargs={"scope": "openid email profile"},
 )
-def login_required(f):
-    @wraps(f)
-    def decorated_funcion(*args, **kwargs):
-        if 'user' not in session:
-            return redirect(url_for('api.login_google'))
-        return f(*args, **kwargs)
-    return decorated_funcion
+
+# def login_required(f):
+#     @wraps(f)
+#     def decorated_funcion(*args, **kwargs):
+#         if 'user' not in session:
+#             return redirect(url_for('api.logout'))
+#         return f(*args, **kwargs)
+#     return decorated_funcion
 
 @api.route('/signup', methods=["POST"])
 def creando_usuario():
@@ -222,6 +223,7 @@ def get_user():
 @jwt_required()
 def upload_image():
     try:
+        print(request.headers)
         user_email = get_jwt_identity()
         print(f"Usuario autenticado: {user_email}")
 
@@ -278,6 +280,7 @@ def generate_group_id():
 
 
 @api.route('/groups', methods=['POST'])
+
 def create_group():
     data = request.get_json() 
     print("Datos recibidos:", data)
@@ -323,6 +326,8 @@ def create_group():
 
 
 @api.route('/groups', methods=['GET'])
+
+
 def get_groups():
     groups = Group.query.all()
     groups_list = []
@@ -337,6 +342,7 @@ def get_groups():
     return jsonify({"groups": groups_list})
 
 @api.route('/completGroups', methods=['GET'])
+
 def get_completGroups():
     groups = Group.query.all()
     groups_list = []
@@ -360,6 +366,7 @@ def get_completGroups():
 
 
 @api.route('/group/<string:idgroup>', methods=['GET'])
+
 def get_group(idgroup):
     group = Group.query.get(idgroup)
     if not group:
@@ -395,6 +402,7 @@ def delete_group(idgroup):
 
 
 @api.route('/group/<string:idgroup>/members', methods=['GET'])
+
 def get_members(idgroup):
     group = Group.query.get(idgroup)
     if not group:
@@ -497,6 +505,7 @@ def add_expense(group_id):
 
 
 @api.route('/expenses', methods=['GET'])
+
 def get_all_expenses():
     expenses = Expense.query.all()
     result = []
@@ -515,6 +524,7 @@ def get_all_expenses():
     return jsonify(result)
 
 @api.route('/expenses/<string:group_id>', methods=['GET'])
+
 def get_group_expenses(group_id):
     page = request.args.get('page', 1, type=int)
     per_page = 10
@@ -547,6 +557,7 @@ def get_group_expenses(group_id):
 
 
 @api.route('/expense/<idexpense>', methods=['GET'])
+
 def get_expense(idexpense):
     expense = Expense.query.get(idexpense)
     if not expense:
@@ -655,6 +666,7 @@ def assign_user_to_member():
 
 
 @api.route('/user_groups/<string:user_email>', methods=['GET'])
+
 def get_user_groups(user_email):
     members = Member.query.filter_by(user_email=user_email).all()
     groups_list = []
@@ -712,37 +724,39 @@ def remove_user_email_from_member(member_id):
 
 
 @api.route('/send_email', methods=['POST'])
-
 def send_email():
+    resend.api_key = os.getenv("RESEND2_KEY")
+    print("RESEND2", resend.api_key)
     try:
         data = request.get_json()
 
-        email = data.get("email")
+        email1 = data.get("email")
         group_id = data.get("group_id")
 
-        if not email or not group_id:
+        if not email1 or not group_id:
             return jsonify({"error": "Email y Group ID son requeridos"}), 400
 
        
 
-        group_link = f"https://cautious-chainsaw-rj44xx4w449f5wxg-3000.app.github.dev/group/{group_id}"
+        group_link = f"https://sample-service-name-4h1m.onrender.com/group/{group_id}"
         print(group_link)
         
-        print(dir(resend.emails))
+        print("salida invitacion: ", dir(resend.Emails))
         params: resend.Emails.SendParams = {
-            "from": "LinkUp <linkup@resend.dev>",
-            "to": [email],
+            "from": "LinkUp <invitacion@resend.dev>",
+            "to": ["73appsdrm@gmail.com"],
             "subject": "Invitación a unirse al grupo",
             "html": f"""
                 <p>Hola,</p>
-                <p>Te han invitado a un grupo en nuestra aplicación. Haz clic en el siguiente enlace para unirte:</p>
+                <p>Te han invitado a unirte a un grupo en nuestra aplicación. Haz clic en el siguiente enlace para unirte:</p>
                 <p><a href="{group_link}" style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Unirme al grupo</a></p>
-            """
+            """,
         }
         email = resend.Emails.send(params)
-        print(email)
+        print("retorno desde invitacion",email)
         if "error" in params:
-            return jsonify({"error": response["error"]}), 500
+            print(response["error"])
+            return jsonify({"error conf params": response["error"]}), 500
 
 
         return jsonify({"msg": "Email enviado con éxito"}), 200
@@ -753,6 +767,7 @@ def send_email():
 
 @api.route('/send_reminder', methods=['POST'])
 def send_reminder():
+    resend.api_key = os.getenv("RESEND_KEY")
     try:
         data = request.get_json()
 
@@ -768,11 +783,11 @@ def send_reminder():
        
 
         # Crear el enlace de invitación
-        group_link = f"https://cautious-chainsaw-rj44xx4w449f5wxg-3000.app.github.dev/group/{group_id}"
+        group_link = f"https://sample-service-name-4h1m.onrender.com/group/{group_id}"
         print(group_link)
         
         # Enviar el email con Resend
-        print(dir(resend.Emails))
+        print("email de solicitar pago: ", dir(resend.Emails))
         params: resend.Emails.SendParams = {
             "from": "LinkUp <linkup@resend.dev>",
             "to": ["rzmsdo@gmail.com"],
@@ -787,7 +802,7 @@ def send_reminder():
             """
         }
         email = resend.Emails.send(params)
-        print(email)
+        print("desdesolicitar",email)
         if "error" in params:
             return jsonify({"error": response["error"]}), 500
 

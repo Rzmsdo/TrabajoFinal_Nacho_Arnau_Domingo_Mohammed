@@ -11,6 +11,7 @@ import viaje from "../../img/viaje.jpg";
 import vacaciones from "../../img/vacaciones.jpg";
 import { UploadFoto } from "../component/upLoadFoto";
 import Swal from 'sweetalert2';
+import { useNavigate } from "react-router-dom";
 
 
 export const Private = () => {
@@ -34,6 +35,7 @@ export const Private = () => {
     const [imagenSeleccionada, setImagenSeleccionada] = useState();
     const [listGroups, setListGroups] = useState([]);
     const [errorMensaje, setErrorMensaje] = useState("");
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchGroups();
@@ -45,6 +47,13 @@ export const Private = () => {
         setIntegrantes([integrante]);
 
     }, [nomusuario]);
+
+      useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login", { replace: true });
+        }
+      }, [navigate]);
 
     const fetchGroups = async () => {
         const data = await actions.getGroups();
@@ -296,7 +305,7 @@ export const Private = () => {
                                     <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
                                         {!integrante.you ? integrante.name : integrante.name + " (yo)"}
                                         <div>
-                                            {!integrante.you ? <button className="btn btn-primary btn-sm me-1" onClick={() => asignarTuIntegrante(integrante)}><i class="fa-solid fa-user"></i></button> : ""}
+                                            {!integrante.you ? <button className="btn btn-primary btn-sm me-1" onClick={() => asignarTuIntegrante(integrante)}><i className="fa-solid fa-user"></i></button> : ""}
                                             <button className="btn btn-danger btn-sm ms-1" onClick={() => eliminarIntegrante(index)}><i className="fa-solid fa-trash"></i></button>
                                         </div>
                                     </li>
